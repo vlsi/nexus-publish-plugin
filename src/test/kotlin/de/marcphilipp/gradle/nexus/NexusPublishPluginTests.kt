@@ -26,6 +26,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.matching.RegexPattern
 import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
@@ -424,7 +425,9 @@ class NexusPublishPluginTests {
     }
 
     private fun stubCreateStagingRepoRequest(server: WireMockServer, url: String, stagedRepositoryId: String) {
+        // $.data.description should be a string, so we validate that it does not start with [ or {
         server.stubFor(post(urlEqualTo(url))
+                .withRequestBody(matchingJsonPath("\$.data.description", RegexPattern("^[^\\[{].*$")))
                 .willReturn(aResponse().withBody(gson.toJson(mapOf("data" to mapOf("stagedRepositoryId" to stagedRepositoryId))))))
     }
 

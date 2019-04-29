@@ -74,7 +74,7 @@ constructor(project: Project, extension: NexusPublishExtension, private val serv
             val client = NexusClient(serverUrl, username.orNull, password.orNull)
             val stagingProfileId = determineStagingProfileId(client)
             logger.info("Creating staging repository for stagingProfileId '{}'", stagingProfileId)
-            val stagingRepositoryId = client.createStagingRepository(stagingProfileId)
+            val stagingRepositoryId = client.createStagingRepository(stagingProfileId, project.run { "$name $version ($group)" })
             project.rootProject.plugins.withId("io.codearte.nexus-staging") {
                 val nexusStagingExtension = project.rootProject.the<NexusStagingExtension>()
                 try {

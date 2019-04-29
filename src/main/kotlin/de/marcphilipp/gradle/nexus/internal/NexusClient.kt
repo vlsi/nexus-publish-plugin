@@ -84,9 +84,9 @@ class NexusClient(private val baseUrl: URI, username: String?, password: String?
         }
     }
 
-    fun createStagingRepository(stagingProfileId: String): String {
+    fun createStagingRepository(stagingProfileId: String, description: String): String {
         try {
-            val response = api.startStagingRepo(stagingProfileId, Description("publishing")).execute()
+            val response = api.startStagingRepo(stagingProfileId, Description(description)).execute()
             if (!response.isSuccessful) {
                 throw failure("create staging repository", response)
             }
@@ -137,6 +137,13 @@ class NexusClient(private val baseUrl: URI, username: String?, password: String?
             return object : TypeAdapter<T>() {
                 @Throws(IOException::class)
                 override fun write(writer: JsonWriter, value: T) {
+                    if (value !is Description) {
+                        delegate.write(writer, value)
+                        return
+                    }
+                    // Only Description is to be wrapped with extra {data:...} for now
+                    // Otherwise requests are sent as {data:{description:{data:"message"}}}
+                    // which is not right.
                     val jsonObject = JsonObject()
                     jsonObject.add("data", delegate.toJsonTree(value))
                     elementAdapter.write(writer, jsonObject)
